@@ -5,7 +5,7 @@ public class Bot {
   Board.TokenType botToken;
   Board.TokenType oppToken;
 
-  final int SEARCH_DEPTH = 7;
+  final int SEARCH_DEPTH = 11;
   final int BOT_WIN_SCORE = Integer.MAX_VALUE - SEARCH_DEPTH - 1;
   final int BOT_LOSS_SCORE = Integer.MIN_VALUE;
 
@@ -40,7 +40,7 @@ public class Bot {
       // Place test move
       board.dropToken(col, botToken);
 
-      int score = minimax(false, SEARCH_DEPTH);
+      int score = minimax(false, SEARCH_DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE);
       if (score > bestScore) {
         bestScore = score;
         bestCol = col;
@@ -51,16 +51,15 @@ public class Bot {
     }
 
     System.out.println("<BOT> Variations Checked: " + checkCount);
-    System.out.println("<BOT> Best Possible Score: " + bestScore);
 
     return bestCol;
   }
 
   // Returns the score of the branch
-  private int minimax(boolean botTurn, int depth) {
+  private int minimax(boolean botTurn, int depth, int alpha, int beta) {
 
+    checkCount++;
     if (depth == 0) {
-      checkCount++;
       return 0;
     }
 
@@ -75,6 +74,7 @@ public class Bot {
         return 50;
       }
       case Board.BoardState.NONE: {
+        checkCount--;
         break; // Ts is just for LSP to shut it
       }
     }
@@ -89,19 +89,23 @@ public class Bot {
 
       board.dropToken(col, botTurn ? botToken : oppToken);
 
-      int score = minimax(!botTurn, depth - 1);
+      int score = minimax(!botTurn, depth - 1, alpha, beta);
+
+      board.pullToken(col);
 
       // bot tries to maximize score, opp tries to minimize
       if ((botTurn && score > bestScore) || (!botTurn && score < bestScore)) {
         bestScore = score;
       }
 
-      board.pullToken(col);
-    }
+      if (botTurn) {
+        alpha = Math.max(bestScore, alpha);
+      } else {
+        beta = Math.min(bestScore, beta);
+      }
 
-    // Weight losing later higher
-    if (bestScore < 0) {
-      bestScore++;
+      if (alpha >= beta)
+        break;
     }
 
     return bestScore;
