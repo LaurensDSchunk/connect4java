@@ -16,9 +16,9 @@ public class App {
       board.dropToken(bot.getMove(board), Board.TokenType.RED);
     }
 
+    // Game over display
     board.display();
 
-    // Game over display
     switch (board.getBoardState()) {
       case Board.BoardState.NONE: {
         throw new RuntimeException("How does this even happen lol");
@@ -41,12 +41,17 @@ public class App {
   public static int getColumnInput() {
     int number = -1;
 
-    while (number < 1 || number > 7) {
+    while ((number < 1 || number > 7)) {
       System.out.print("Enter a column 1-7: ");
       if (scanner.hasNextInt()) {
         number = scanner.nextInt();
         if (number < 1 || number > 7) {
           System.out.println("Please enter a number between 1 and 7.");
+          continue;
+        }
+        if (board.isColumnFull(number - 1)) {
+          System.out.println("That column is full!");
+          number = -1;
         }
       } else {
         System.out.println("Invalid input. Please enter a number between 1 and 7.");
@@ -55,5 +60,21 @@ public class App {
     }
 
     return number - 1;
+  }
+
+  public static void testBoard() {
+    char[][] testLayout = {
+        { ' ', ' ', 'R', 'R', ' ', ' ', ' ' },
+        { ' ', 'Y', 'R', 'R', ' ', ' ', ' ' },
+        { 'Y', 'Y', ' ', ' ', 'R', ' ', ' ' },
+        { 'R', ' ', ' ', ' ', ' ', 'R', ' ' },
+        { ' ', ' ', ' ', ' ', ' ', ' ', ' ' },
+        { ' ', ' ', ' ', ' ', ' ', ' ', ' ' },
+    };
+
+    Board testBoard = new Board(testLayout);
+
+    System.out.println(testBoard.getBoardState());
+
   }
 }

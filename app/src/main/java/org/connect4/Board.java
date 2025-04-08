@@ -18,18 +18,20 @@ public class Board {
 
   // Board dimensions
   // NOTE: lower row indices are higher on the board
-  private final int rows = 6;
-  private final int cols = 7;
+  public static final int ROWS = 6;
+  public static final int COLS = 7;
+
+  public static final int WIN_LENGTH = 4;
 
   private TokenType[][] board;
 
   // Default constructor
   public Board() {
-    board = new TokenType[6][7];
+    board = new TokenType[ROWS][COLS];
 
     // Fills the board with empty states
-    for (int row = 0; row < rows; row++) {
-      for (int col = 0; col < cols; col++) {
+    for (int row = 0; row < ROWS; row++) {
+      for (int col = 0; col < COLS; col++) {
         board[row][col] = TokenType.NONE;
       }
     }
@@ -37,7 +39,40 @@ public class Board {
 
   // Copy constructor
   public Board(Board other) {
-    this.board = other.getBoard().clone();
+    this.board = other.getBoard();
+  }
+
+  // Constructs the board based off of an array
+  // 'R' is red and "Y" is yellow. All other characters are empty
+  public Board(char[][] charBoard) {
+    if (charBoard.length != ROWS)
+      throw new IllegalArgumentException("The input board has an incorret number of rows");
+
+    // Because the sub-arrays can have different lengths, one must check every row
+    for (int row = 0; row < ROWS; row++) {
+      if (charBoard[row].length != COLS)
+        throw new IllegalArgumentException("The input board has an incorret number of columns");
+    }
+
+    board = new TokenType[ROWS][COLS];
+    for (int row = 0; row < ROWS; row++) {
+      for (int col = 0; col < COLS; col++) {
+        switch (charBoard[row][col]) {
+          case 'R': {
+            board[row][col] = TokenType.RED;
+            break;
+          }
+          case 'Y': {
+            board[row][col] = TokenType.YELLOW;
+            break;
+          }
+          default: {
+            board[row][col] = TokenType.NONE;
+            break;
+          }
+        }
+      }
+    }
   }
 
   // Returns true if column col is full and cannot be added to
@@ -50,7 +85,7 @@ public class Board {
     // Ensure that the arguments are valid
     if (token == TokenType.NONE)
       throw new IllegalArgumentException("An empty token cannot be dropped");
-    if (col < 0 || col >= cols)
+    if (col < 0 || col >= COLS)
       throw new IllegalArgumentException("This column does not exist on the board");
 
     // If the token is full, tokens cannot be dropped
@@ -58,7 +93,7 @@ public class Board {
       throw new IllegalStateException("Cannot drop token: column is full");
 
     // Finds the first empty row and inserts
-    for (int row = rows - 1; row >= 0; row--) {
+    for (int row = ROWS - 1; row >= 0; row--) {
       if (board[row][col] == TokenType.NONE) {
         board[row][col] = token;
         return;
@@ -68,15 +103,15 @@ public class Board {
 
   // Pulls a token out of the column
   public void pullToken(int col) {
-    if (col < 0 || col >= cols)
+    if (col < 0 || col >= COLS)
       throw new IllegalArgumentException("This column does not exist on the board");
 
     // If the column is empty, tokens cannot be removed
-    if (board[rows - 1][col] == TokenType.NONE)
+    if (board[ROWS - 1][col] == TokenType.NONE)
       throw new IllegalStateException("Cannot pull token: column is empty");
 
     // Finds the first filled row and removes the token
-    for (int row = 0; row < rows; row++) {
+    for (int row = 0; row < ROWS; row++) {
       if (board[row][col] != TokenType.NONE) {
         board[row][col] = TokenType.NONE;
         return;
@@ -87,11 +122,8 @@ public class Board {
   // Returns the win state of the board
   public BoardState getBoardState() {
 
-    // The amount in a row required to win
-    final int winLength = 4;
-
-    for (int row = 0; row < rows; row++) {
-      for (int col = 0; col < cols; col++) {
+    for (int row = 0; row < ROWS; row++) {
+      for (int col = 0; col < COLS; col++) {
         // This is the type that will be checked
         TokenType currentType = board[row][col];
 
@@ -105,9 +137,9 @@ public class Board {
         boolean validPos = false;
 
         // Check for horizontal wins
-        if (col <= cols - winLength) {
+        if (col <= COLS - WIN_LENGTH) {
           validRow = true;
-          for (int offset = 0; offset < winLength; offset++) {
+          for (int offset = 0; offset < WIN_LENGTH; offset++) {
 
             if (board[row][col + offset] != currentType) {
               validRow = false;
@@ -116,9 +148,9 @@ public class Board {
         }
 
         // Check for vertical wins
-        if (row <= rows - winLength) {
+        if (row <= ROWS - WIN_LENGTH) {
           validCol = true;
-          for (int offset = 0; offset < winLength; offset++) {
+          for (int offset = 0; offset < WIN_LENGTH; offset++) {
 
             if (board[row + offset][col] != currentType) {
               validCol = false;
@@ -127,9 +159,9 @@ public class Board {
         }
 
         // Check for diagonal negative wins
-        if (col <= cols - winLength && row <= rows - winLength) {
+        if (col <= COLS - WIN_LENGTH && row <= ROWS - WIN_LENGTH) {
           validNeg = true;
-          for (int offset = 0; offset < winLength; offset++) {
+          for (int offset = 0; offset < WIN_LENGTH; offset++) {
 
             if (board[row + offset][col + offset] != currentType) {
               validNeg = false;
@@ -138,9 +170,9 @@ public class Board {
         }
 
         // Check for diagonal positive wins
-        if (col >= winLength && row <= rows - winLength) {
+        if (col >= WIN_LENGTH - 1 && row <= ROWS - WIN_LENGTH) {
           validPos = true;
-          for (int offset = 0; offset < winLength; offset++) {
+          for (int offset = 0; offset < WIN_LENGTH; offset++) {
 
             if (board[row + offset][col - offset] != currentType) {
               validPos = false;
@@ -158,7 +190,7 @@ public class Board {
 
     // Check for a full board for tie
     boolean fullBoard = true;
-    for (int col = 0; col < cols; col++) {
+    for (int col = 0; col < COLS; col++) {
       if (!isColumnFull(col)) {
         fullBoard = false;
       }
@@ -167,14 +199,13 @@ public class Board {
     return fullBoard ? BoardState.TIE : BoardState.NONE;
   }
 
-  // Returns the 2d array board
+  // Returns a deep copy of the 2d array board
   public TokenType[][] getBoard() {
-    return board;
-  }
-
-  // Gets the amount of columns in the board
-  public int getCols() {
-    return cols;
+    TokenType[][] copy = new TokenType[board.length][];
+    for (int i = 0; i < board.length; i++) {
+      copy[i] = board[i].clone();
+    }
+    return copy;
   }
 
   // Draws the board to the console
@@ -183,18 +214,22 @@ public class Board {
     final String RESET = "\u001B[0m";
     final String RED = "\u001B[31m";
     final String YELLOW = "\u001B[33m";
+    // final String CLEAR = "\033[H\033[2J";
+
+    // Clear the console
+    // System.out.print(CLEAR);
 
     String result = "";
 
     // Adds the numbers on top
-    for (int col = 0; col < cols; col++) {
+    for (int col = 0; col < COLS; col++) {
       result += " " + (col + 1) + " ";
     }
     result += "\n";
 
     // Creates the grid
-    for (int row = 0; row < rows; row++) {
-      for (int col = 0; col < cols; col++) {
+    for (int row = 0; row < ROWS; row++) {
+      for (int col = 0; col < COLS; col++) {
         switch (board[row][col]) {
           case TokenType.RED: {
             result += RED + " O " + RESET;
@@ -214,5 +249,6 @@ public class Board {
     }
 
     System.out.println(result);
+    System.out.flush();
   }
 }
