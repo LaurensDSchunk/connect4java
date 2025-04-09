@@ -13,6 +13,9 @@ public class App {
       board.display();
 
       board.dropToken(getColumnInput(), Board.TokenType.YELLOW);
+      if (board.getBoardState() != Board.BoardState.NONE)
+        break;
+
       board.dropToken(bot.getMove(board), Board.TokenType.RED);
     }
 

@@ -1,5 +1,7 @@
 package org.connect4;
 
+import java.util.Arrays;
+
 public class Board {
   // These are the values that each cell can have
   public static enum TokenType {
@@ -122,7 +124,7 @@ public class Board {
   // Returns the win state of the board
   public BoardState getBoardState() {
 
-    for (int row = 0; row < ROWS; row++) {
+    for (int row = ROWS - 1; row > 0; row--) {
       for (int col = 0; col < COLS; col++) {
         // This is the type that will be checked
         TokenType currentType = board[row][col];
@@ -214,10 +216,10 @@ public class Board {
     final String RESET = "\u001B[0m";
     final String RED = "\u001B[31m";
     final String YELLOW = "\u001B[33m";
-    // final String CLEAR = "\033[H\033[2J";
+    final String CLEAR = "\033[H\033[2J";
 
     // Clear the console
-    // System.out.print(CLEAR);
+    System.out.print(CLEAR);
 
     String result = "";
 
@@ -250,5 +252,18 @@ public class Board {
 
     System.out.println(result);
     System.out.flush();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof Board))
+      return false;
+    Board b = (Board) o;
+    return Arrays.deepEquals(this.board, b.board);
+  }
+
+  @Override
+  public int hashCode() {
+    return Arrays.deepHashCode(board);
   }
 }

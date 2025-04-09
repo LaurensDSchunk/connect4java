@@ -8,6 +8,7 @@ public class Bot {
   final int SEARCH_DEPTH = 11;
   final int BOT_WIN_SCORE = Integer.MAX_VALUE - SEARCH_DEPTH - 1;
   final int BOT_LOSS_SCORE = Integer.MIN_VALUE;
+  final int TIE_SCORE = 100;
 
   Board board;
 
@@ -50,7 +51,10 @@ public class Bot {
       board.pullToken(col);
     }
 
-    System.out.println("<BOT> Variations Checked: " + checkCount);
+    /*
+     * System.out.println("<BOT> Variations Checked: " + checkCount);
+     * System.out.println("<BOT> Best Score: " + bestScore);
+     */
 
     return bestCol;
   }
@@ -71,7 +75,7 @@ public class Bot {
         return botToken == Board.TokenType.YELLOW ? BOT_WIN_SCORE : BOT_LOSS_SCORE;
       }
       case Board.BoardState.TIE: {
-        return 50;
+        return TIE_SCORE;
       }
       case Board.BoardState.NONE: {
         checkCount--;
